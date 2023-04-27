@@ -1394,34 +1394,34 @@ function vm_boot() {
 
         # shellcheck disable=SC2054,SC2206
         args+=(-device ${MAC_DISK_DEV},drive=SystemDisk
-            -drive id=SystemDisk,if=none,format=qcow2,file="${disk_img}" ${STATUS_QUO})
+            -drive id=SystemDisk,if=none,format=qcow2,format=qcow2,discard=unmap,detect-zeroes=on,file="${disk_img}" ${STATUS_QUO})
     elif [ "${guest_os}" == "kolibrios" ]; then
         # shellcheck disable=SC2054,SC2206
         args+=(-device ahci,id=ahci
             -device ide-hd,bus=ahci.0,drive=SystemDisk
-            -drive id=SystemDisk,if=none,format=qcow2,file="${disk_img}" ${STATUS_QUO})
+            -drive id=SystemDisk,if=none,format=qcow2,discard=unmap,detect-zeroes=on,file="${disk_img}" ${STATUS_QUO})
 
     elif [ "${guest_os}" == "batocera" ] ; then
         # shellcheck disable=SC2054,SC2206
         args+=(-device virtio-blk-pci,drive=BootDisk
             -drive id=BootDisk,if=none,format=raw,file="${img}"
             -device virtio-blk-pci,drive=SystemDisk
-            -drive id=SystemDisk,if=none,format=qcow2,file="${disk_img}" ${STATUS_QUO})
+            -drive id=SystemDisk,if=none,format=qcow2,discard=unmap,detect-zeroes=on,file="${disk_img}" ${STATUS_QUO})
 
     elif [ "${guest_os}" == "reactos" ]; then
         # https://reactos.org/wiki/QEMU
         # shellcheck disable=SC2054,SC2206
-        args+=(-drive if=ide,index=0,media=disk,file="${disk_img}")
+        args+=(-drive if=ide,index=0,media=disk,discard=unmap,detect-zeroes=on,file="${disk_img}")
 
     elif [ "${guest_os}" == "windows-server" ]; then
         # shellcheck disable=SC2054,SC2206
         args+=(-device ide-hd,drive=SystemDisk
-            -drive id=SystemDisk,if=none,format=qcow2,file="${disk_img}" ${STATUS_QUO})
+            -drive id=SystemDisk,if=none,format=qcow2,discard=unmap,detect-zeroes=on,file="${disk_img}" ${STATUS_QUO})
 
     else
         # shellcheck disable=SC2054,SC2206
         args+=(-device virtio-blk-pci,drive=SystemDisk
-            -drive id=SystemDisk,if=none,format=${disk_format},file="${disk_img}" ${STATUS_QUO})
+            -drive id=SystemDisk,if=none,format=${disk_format},discard=unmap,detect-zeroes=on,file="${disk_img}" ${STATUS_QUO})
     fi
 
     # https://wiki.qemu.org/Documentation/9psetup
