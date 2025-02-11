@@ -1,6 +1,6 @@
 ---
 author: Martin Wimpress
-date: June 24, 2024
+date: December 30, 2024
 footer: quickget
 header: Quickget User Manual
 section: 1
@@ -124,11 +124,12 @@ You can also use `quickget` with advanced options :
 
 ``` text
   --download      <os> <release> [edition] : Download image; no VM configuration
-  --create-config <os> [path/url]          : Create VM config for a OS image
+  --create-config <os> [path/url] [flags]  : Create VM config for an OS image
   --open-homepage <os>                     : Open homepage for the OS
   --show          [os]                     : Show OS information
   --version                                : Show version
   --help                                   : Show this help message
+  --disable-unattended                     : Force quickget not to set up an unattended installation
   --url           [os] [release] [edition] : Show image URL(s)
   --check         [os] [release] [edition] : Check image URL(s)
   --list                                   : List all supported systems
@@ -202,6 +203,7 @@ Further information is available from the project
 - `linuxlite` (Linux Lite)
 - `linuxmint` (Linux Mint)
 - `lmde` (Linux Mint Debian Edition)
+- `maboxlinux` (Mabox Linux)
 - `mageia` (Mageia)
 - `manjaro` (Manjaro)
 - `mxlinux` (MX Linux)
@@ -219,6 +221,7 @@ Further information is available from the project
 - `popos` (Pop!\_OS)
 - `porteus` (Porteus)
 - `primtux` (PrimTux)
+- `proxmox-ve` (Proxmox VE)
 - `pureos` (PureOS)
 - `reactos` (ReactOS)
 - `rebornos` (RebornOS)
@@ -484,4 +487,4 @@ Submit bug reports online at:
 
 Full sources at: <https://github.com/quickemu-project/quickemu>
 
-quickemu(1), quickemu_conf(1), quickgui(1)
+quickemu(1), quickemu_conf(5), quickgui(1)
