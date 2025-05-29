@@ -78,6 +78,7 @@ function os_info() {
         opensuse)         INFO="openSUSE|-|https://www.opensuse.org/|The makers choice for sysadmins, developers and desktop users.";;
         oraclelinux)      INFO="Oracle Linux|-|https://www.oracle.com/linux/|Linux with everything required to deploy, optimize, and manage applications on-premises, in the cloud, and at the edge.";;
         parrotsec)        INFO="Parrot Security|parrot:parrot|https://www.parrotsec.org/|Provides a huge arsenal of tools, utilities and libraries that IT and security professionals can use to test and assess the security of their assets in a reliable, compliant and reproducible way.";;
+        pclinuxos)        INFO="PCLinuxOS|-|https://www.pclinuxos.com/|PCLinuxOS is a free easy to use Linux-based Operating System for x86_64 desktops or laptops.";;
         peppermint)       INFO="PeppermintOS|-|https://peppermintos.com/|Provides a user with the opportunity to build the system that best fits their needs. While at the same time providing a functioning OS with minimum hassle out of the box.";;
         popos)            INFO="Pop!_OS|-|https://pop.system76.com/|Operating system for STEM and creative professionals who use their computer as a tool to discover and create.";;
         porteus)          INFO="Porteus|-|http://www.porteus.org/|Complete linux operating system that is optimized to run from CD, USB flash drive, hard drive, or other bootable storage media.";;
@@ -471,6 +472,7 @@ function os_support() {
     opensuse \
     oraclelinux \
     parrotsec \
+    pclinuxos \
     peppermint \
     popos \
     porteus \
@@ -556,7 +558,7 @@ function releases_archlinux() {
 
 function releases_arcolinux() {
     #shellcheck disable=SC2046,SC2005
-    echo $(web_pipe "https://mirror.accum.se/mirror/arcolinux.info/iso/" | grep -o -E -e "v[[:digit:]]{2}.[[:digit:]]{2}.[[:digit:]]{2}" | sort -ru | head -n 5)
+    echo $(web_pipe "https://ant.seedhost.eu/arcolinux/iso/" | grep -o -E -e "v[[:digit:]]{2}.[[:digit:]]{2}.[[:digit:]]{2}" | sort -ru | head -n 5)
 }
 
 function editions_arcolinux() {
@@ -588,7 +590,7 @@ function releases_bazzite() {
 }
 
 function editions_bazzite() {
-    echo gnome kde
+    echo gnome plasma deck-gnome deck-plasma
 }
 
 function releases_biglinux() {
@@ -895,7 +897,9 @@ function releases_openbsd() {
 
 function releases_openindiana() {
     #shellcheck disable=SC2046,SC2005
-    echo $(web_pipe "https://dlc.openindiana.org/isos/hipster/" | grep link | cut -d'/' -f 1 | cut -d '"' -f4 | sort -r | tail -n +2 | head -n 5)
+    #echo $(web_pipe "https://dlc.openindiana.org/isos/hipster/" | grep link | cut -d'/' -f 1 | cut -d '"' -f4 | sort -r | tail -n +2 | head -n 5)
+    echo $(web_pipe "https://dlc.openindiana.org/isos/hipster/" | grep 'href="./2' | cut -d'/' -f 2 | sort -r |  head -n 5)
+
 }
 
 function editions_openindiana() {
@@ -913,11 +917,20 @@ function releases_oraclelinux() {
 
 function releases_parrotsec() {
     #shellcheck disable=SC2046,SC2005
-    echo $(web_pipe "https://download.parrot.sh/parrot/iso/" |  grep -o -E 'href="[[:digit:]]\.[[:digit:]]+' | sort -nr | head -n 3 | cut -d\" -f 2 )
+    echo $(web_pipe "https://deb.parrot.sh/parrot/iso/" | grep -o -E 'href="([[:digit:]]+\.)+[[:digit:]]+/' | sort -nr | head -n 3 | cut -d\" -f 2 | cut -d'/' -f 1)
 }
 
 function editions_parrotsec() {
     echo home htb security
+}
+
+function releases_pclinuxos() {
+# shellcheck disable=SC2046
+    echo $(web_pipe "https://ftp.fau.de/pclinuxos/pclinuxos/iso" | grep -oP 'pclinuxos64-\K[^\-]+-\K[0-9]+\.[0-9]+' | head -n 1)
+}
+
+function editions_pclinuxos() {
+    echo kde kde-darkstar mate xfce
 }
 
 function releases_peppermint() {
@@ -1021,7 +1034,7 @@ function releases_solus() {
 
 function editions_solus() {
     #shellcheck disable=SC2046,SC2005
-    echo $(web_pipe_json "https://downloads.getsol.us/isos/$(releases_solus | tail -n1)/" | jq -r '.[].name | sub("Solus-(?<e>.*)-Release-.*"; "\(.e)")' | sort -u)
+    echo $(web_pipe_json "https://downloads.getsol.us/isos/$(IFS=' '; releases_solus | tail -n1)/" | jq -r '.[].name | select(endswith("iso")) | sub("Solus-(?<e>.*)-Release-.*"; "\(.e)")' | sort -u)
 }
 
 function releases_sparkylinux() {
@@ -1247,6 +1260,7 @@ function web_get() {
     if [[ ${OS} != windows && ${OS} != macos && ${OS} != windows-server ]]; then
         echo "Downloading $(pretty_name "${OS}") ${RELEASE} ${EDITION}"
         echo "- URL: ${URL}"
+        echo "- PATH: ${PWD}/${DIR}/${FILE}"
     fi
 
     if ! curl --disable --progress-bar --location --output "${DIR}/${FILE}" --continue-at - --user-agent "${USER_AGENT}" "${HEADERS[@]}" -- "${URL}"; then
@@ -1610,7 +1624,7 @@ function get_arcolinux() {
     local HASH=""
     local ISO=""
     local URL=""
-    URL="https://mirror.accum.se/mirror/arcolinux.info/iso/${RELEASE}"
+    URL="https://ant.seedhost.eu/arcolinux/iso/${RELEASE}"
     ISO="arco${EDITION}-${RELEASE}-x86_64.iso"
     HASH=$(web_pipe "${URL}/${ISO}.sha256" | cut -d' ' -f1)
     echo "${URL}/${ISO} ${HASH}"
@@ -1646,8 +1660,10 @@ function get_bazzite() {
     local ISO=""
     local URL="https://download.bazzite.gg"
     case ${EDITION} in
-        gnome) ISO="bazzite-gnome-stable.iso";;
-        kde)  ISO="bazzite-stable.iso";;
+        gnome) ISO="bazzite-gnome-stable-amd64.iso";;
+        plasma)  ISO="bazzite-stable-amd64.iso";;
+        deck-gnome)  ISO="bazzite-deck-gnome-stable-amd64.iso";;
+        deck-plasma)  ISO="bazzite-deck-stable-amd64.iso";;
     esac
     HASH=$(web_pipe "${URL}/${ISO}-CHECKSUM" | cut -d' ' -f1)
     echo "${URL}/${ISO} ${HASH}"
@@ -2312,6 +2328,21 @@ function get_parrotsec() {
     ISO="Parrot-${EDITION}-${RELEASE}_amd64.iso"
     URL="https://download.parrot.sh/parrot/iso/${RELEASE}"
     HASH="$(web_pipe "${URL}/signed-hashes.txt" | grep "${ISO}" | cut -d' ' -f1)"
+    echo "${URL}/${ISO} ${HASH}"
+}
+
+function get_pclinuxos() {
+    case ${EDITION} in
+        mate) RELEASE="${RELEASE//./-}";;
+        # in case an edition is added that uses the mate style and sorts higher
+        kde|kde-darkstar) RELEASE="${RELEASE//-/.}";;
+        xfce) RELEASE="${RELEASE//-/.}";;
+        *) ;;
+    esac
+# shellcheck disable=SC2155
+    local HASH="$(web_pipe "${URL}/pclinuxos64-${EDITION}-${RELEASE}.md5sum" | head -c 32)"
+    local ISO="pclinuxos64-${EDITION}-${RELEASE}.iso"
+    local URL="https://ftp.fau.de/pclinuxos/pclinuxos/iso"
     echo "${URL}/${ISO} ${HASH}"
 }
 
