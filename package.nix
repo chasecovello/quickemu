@@ -1,33 +1,33 @@
-{ lib
-, fetchFromGitHub
-, installShellFiles
-, makeWrapper
-, stdenv
-, testers
-, cdrtools
-, curl
-, gawk
-, glxinfo
-, gnugrep
-, gnused
-, jq
-, pciutils
-, procps
-, python3
-, qemu_full
-, samba
-, socat
-, spice-gtk
-, swtpm
-, unzip
-, usbutils
-, util-linux
-, xdg-user-dirs
-, xrandr
-, zsync
-, OVMF
-, OVMFFull
-, quickemu
+{
+  lib,
+  fetchFromGitHub,
+  installShellFiles,
+  makeWrapper,
+  stdenv,
+  testers,
+  cdrtools,
+  curl,
+  gawk,
+  gnugrep,
+  gnused,
+  jq,
+  mesa-demos,
+  pciutils,
+  procps,
+  python3,
+  qemu_full,
+  samba,
+  socat,
+  spice-gtk,
+  swtpm,
+  unzip,
+  usbutils,
+  util-linux,
+  xdg-user-dirs,
+  xrandr,
+  zsync,
+  OVMF ? null,
+  OVMFFull ? null,
 }:
 let
   runtimePaths = [
@@ -48,35 +48,44 @@ let
     util-linux
     xrandr
     zsync
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isLinux [
+    mesa-demos
     OVMF
     OVMFFull
-  ] ++ lib.optionals stdenv.isLinux [
-    glxinfo
     usbutils
     xdg-user-dirs
   ];
-  versionMatches =
-    builtins.match ''
-      .*
-      readonly[[:blank:]]VERSION="([[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+)"
-      .*
-    '' (builtins.readFile ./quickemu);
+  # Extract version using builtins.split to avoid regex backtracking on large files.
+  # builtins.match with .* patterns on multi-kilobyte files can cause stack overflow.
+  versionParts = builtins.split "readonly VERSION=\"([0-9]+\\.[0-9]+\\.[0-9]+)\"" (
+    builtins.readFile ./quickemu
+  );
+  version = builtins.elemAt (builtins.elemAt versionParts 1) 0;
 in
-stdenv.mkDerivation rec {
+stdenv.mkDerivation (finalAttrs: {
   pname = "quickemu";
-  version = builtins.concatStringsSep "" versionMatches;
+  version = version;
   src = lib.cleanSource ./.;
 
   postPatch = ''
     sed -i \
-      -e '/OVMF_CODE_4M.secboot.fd/s|ovmfs=(|ovmfs=("${OVMFFull.firmware}","${OVMFFull.variables}" |' \
-      -e '/OVMF_CODE_4M.fd/s|ovmfs=(|ovmfs=("${OVMF.firmware}","${OVMF.variables}" |' \
+      ${
+        lib.optionalString (OVMF != null && OVMFFull != null) ''
+          -e '/OVMF_CODE_4M.secboot.fd/s|ovmfs=(|ovmfs=("${OVMFFull.firmware}","${OVMFFull.variablesMs}" |' \
+          -e '/OVMF_CODE_4M.fd/s|ovmfs=(|ovmfs=("${OVMF.firmware}","${OVMF.variables}" |' \
+        ''
+      } \
       -e '/cp "''${VARS_IN}" "''${VARS_OUT}"/a chmod +w "''${VARS_OUT}"' \
+      -e 's/Icon=.*qemu.svg/Icon=qemu/' \
       -e 's,\$(command -v smbd),${samba}/bin/smbd,' \
       quickemu
   '';
 
-  nativeBuildInputs = [ makeWrapper installShellFiles ];
+  nativeBuildInputs = [
+    makeWrapper
+    installShellFiles
+  ];
 
   installPhase = ''
     runHook preInstall
@@ -95,13 +104,17 @@ stdenv.mkDerivation rec {
     runHook postInstall
   '';
 
-  passthru.tests = testers.testVersion { package = quickemu; };
+  passthru.tests = testers.testVersion { package = finalAttrs.finalPackage; };
 
   meta = {
     description = "Quickly create and run optimised Windows, macOS and Linux virtual machines";
     homepage = "https://github.com/quickemu-project/quickemu";
+    changelog = "https://github.com/quickemu-project/quickemu/releases/tag/${finalAttrs.version}";
     mainProgram = "quickemu";
     license = lib.licenses.mit;
-    maintainers = with lib.maintainers; [ fedx-sudo flexiondotorg ];
+    maintainers = with lib.maintainers; [
+      fedx-sudo
+      flexiondotorg
+    ];
   };
-}
+})

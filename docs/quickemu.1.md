@@ -1,6 +1,6 @@
 ---
 author: Martin Wimpress
-date: December 30, 2024
+date: February 2, 2026
 footer: quickemu
 header: Quickemu User Manual
 section: 1
@@ -41,8 +41,8 @@ You can also pass optional parameters
 :   Delete the entire VM and its configuration
 
 **--display**
-:   Select display backend. 'sdl' (default), 'gtk', 'none', 'spice' or
-    'spice-app'
+:   Select display backend. 'gtk' (default), 'sdl', 'cocoa', 'none',
+    'spice' or 'spice-app'
 
 **--fullscreen**
 :   Starts VM in full screen mode (Ctl+Alt+f to exit)
@@ -173,9 +173,12 @@ Haiku, KolibriOS, OpenIndiana, ReactOS, and more.
 # Features
 
 - Host support for **Linux and macOS**
-- **macOS** Sonoma, Ventura, Monterey, Big Sur, Catalina & Mojave
+- **macOS** Sequoia, Sonoma, Ventura, Monterey, Big Sur, Catalina &
+  Mojave
 - **Windows** 10 and 11 including TPM 2.0
 - **Windows Server** 2022 2019 2016
+- **ARM64 guest support** for running aarch64 VMs (native on ARM hosts,
+  emulated on x86_64)
 - [Ubuntu](https://ubuntu.com/desktop) and all the **[official Ubuntu
   flavours](https://ubuntu.com/download/flavours)**
 - **Nearly 1000 operating system editions are supported!**
@@ -198,7 +201,7 @@ Haiku, KolibriOS, OpenIndiana, ReactOS, and more.
 ## As featured on [Linux Matters](https://linuxmatters.sh) podcast!
 
 The presenters of Linux Matters 🐧🎙️ are the creators of each of the
-principle Quickemu projects. We discussed Quickemu's 2024 reboot in
+principal Quickemu projects. We discussed Quickemu's 2024 reboot in
 [Episode 30 - Quickemu Rising From the
 Bashes](https://linuxmatters.sh/30).
 <!-- and in [Episode 32 - Quick, quicker, quickest](https://linuxmatters.sh/32) [Martin](https://github.com/flexiondotorg) unveils macOS host support for [**Quickemu**](https://github.com/quickemu-project/quickemu), [Mark](https://github.com/marxjohnson) explains the origins of the [**Quickgui**](https://github.com/quickemu-project/quickgui) desktop app and upcoming improvements, and [Alan](https://github.com/popey) debuts [**Quicktest**](https://github.com/quickemu-project/quicktest); a framework for automatically testing operating systems via Quickemu -->
@@ -240,7 +243,7 @@ requirements manually:
 - [zsync](http://zsync.moria.org.uk/)
 - [unzip](http://www.info-zip.org/UnZip.html)
 
-For Ubuntu, Arch and NixOS hosts, the
+For Ubuntu, Debian, Fedora, Arch and NixOS hosts the native packaging or
 [ppa](https://launchpad.net/~flexiondotorg/+archive/ubuntu/quickemu),
 [AUR](https://aur.archlinux.org/packages/quickemu) or
 [nix](https://github.com/NixOS/nixpkgs/tree/master/pkgs/development/quickemu)
@@ -252,13 +255,16 @@ These examples may save a little typing:
 
 #### Install requirements on Debian hosts
 
-This also applies to derivatives:
+These should be handled by dependencies in Trixie and later. For earlier
+versions (and their derivatives):
 
 ``` shell
 sudo apt-get install bash coreutils curl genisoimage grep jq mesa-utils ovmf pciutils procps python3 qemu sed socat spice-client-gtk swtpm-tools unzip usbutils util-linux xdg-user-dirs xrandr zsync 
 ```
 
 #### Install requirements on Fedora hosts
+
+These are handled natively for Fedora 41 on. For earlier versions:
 
 ``` shell
 sudo dnf install bash coreutils curl edk2-tools genisoimage grep jq mesa-demos pciutils procps python3 qemu sed socat spice-gtk-tools swtpm unzip usbutils util-linux uuidgen-runtime xdg-user-dirs xrandr zsync
@@ -393,18 +399,23 @@ may have further information.
 You can also use `quickget` with advanced options :
 
 ``` text
-  --download      <os> <release> [edition] : Download image; no VM configuration
-  --create-config <os> [path/url] [flags]  : Create VM config for an OS image
-  --open-homepage <os>                     : Open homepage for the OS
-  --show          [os]                     : Show OS information
-  --version                                : Show version
-  --help                                   : Show this help message
-  --disable-unattended                     : Force quickget not to set up an unattended installation
-  --url           [os] [release] [edition] : Show image URL(s)
-  --check         [os] [release] [edition] : Check image URL(s)
-  --list                                   : List all supported systems
-  --list-csv                               : List everything in csv format
-  --list-json                              : List everything in json format
+   --arch           <arch>                    : Set architecture (arm64, aarch64, amd64, x86_64)
+   --download       <os> <release> [edition]  : Download image; no VM configuration
+   --create-config  <os> [path/url] [flags]   : Create VM config for an OS image
+   --open-homepage  <os>                      : Open homepage for the OS
+   --show           [os]                      : Show OS information
+   --version                                  : Show version
+   --help                                     : Show this help message
+------------------------------------ Flags -------------------------------------
+--create-config:
+  --disable-unattended                        : Force quickget not to set up an unattended installation
+-------------------------- For testing & development ---------------------------
+   --url            [os] [release] [edition]  : Show image URL(s)
+   --check          [os] [release] [edition]  : Check image URL(s)
+   --check-all-arch [os] [release] [edition]  : Check downloads for all architectures (amd64 and arm64)
+   --list                                     : List all supported systems
+   --list-csv                                 : List everything in csv format
+   --list-json                                : List everything in json format
 ```
 
 Here are some typical uses
@@ -436,9 +447,8 @@ Further information is available from the project
 - `antix` (Antix)
 - `archcraft` (Archcraft)
 - `archlinux` (Arch Linux)
-- `arcolinux` (Arco Linux)
 - `artixlinux` (Artix Linux)
-- `athenaos` (Athena OS)
+- `azurelinux` (Azure Linux)
 - `batocera` (Batocera)
 - `bazzite` (Bazzite)
 - `biglinux` (BigLinux)
@@ -466,7 +476,6 @@ Further information is available from the project
 - `gnomeos` (GNOME OS)
 - `guix` (Guix)
 - `haiku` (Haiku)
-- `holoiso` (HoloISO)
 - `kali` (Kali)
 - `kdeneon` (KDE Neon)
 - `kolibrios` (KolibriOS)
@@ -487,6 +496,7 @@ Further information is available from the project
 - `opensuse` (openSUSE)
 - `oraclelinux` (Oracle Linux)
 - `parrotsec` (Parrot Security)
+- `pclinuxos` (PCLinuxOS)
 - `peppermint` (PeppermintOS)
 - `popos` (Pop!\_OS)
 - `porteus` (Porteus)
@@ -506,13 +516,10 @@ Further information is available from the project
 - `spirallinux` (SpiralLinux)
 - `tails` (Tails)
 - `tinycore` (Tiny Core Linux)
-- `trisquel` (Trisquel-)
-- `truenas-core` (TrueNAS Core)
-- `truenas-scale` (TrueNAS Scale)
+- `trisquel` (Trisquel)
 - `tuxedo-os` (Tuxedo OS)
 - `vanillaos` (Vanilla OS)
 - `void` (Void Linux)
-- `vxlinux` (VX Linux)
 - `zorin` (Zorin OS)
 
 ### [Custom Linux guests](https://github.com/quickemu-project/quickemu/wiki/02-Create-Linux-virtual-machines#manually-create-linux-guests)
@@ -557,6 +564,13 @@ for solutions or ask for help there** 🛟
 
 `quickget` automatically downloads a macOS recovery image and creates a
 virtual machine configuration.
+
+Note: Some VPN users may need to [turn off their
+VPN](https://github.com/quickemu-project/quickemu/issues/1391#issuecomment-3506845235)
+in order to download a recovery image. Some other users may find [using
+a
+VPN](https://github.com/quickemu-project/quickemu/issues/1391#issuecomment-2429146013)
+necessary in order to download a recovery image.
 
 ``` shell
 quickget macos big-sur
@@ -632,13 +646,13 @@ The default macOS configuration looks like this:
 
 ``` shell
 guest_os="macos"
-img="macos- big-sur/RecoveryImage.img"
-disk_img="macos- big-sur/disk.qcow2"
-macos_release=" big-sur"
+img="macos-big-sur/RecoveryImage.img"
+disk_img="macos-big-sur/disk.qcow2"
+macos_release="big-sur"
 ```
 
 - `guest_os="macos"` instructs Quickemu to optimise for macOS.
-- `macos_release=" big-sur"` instructs Quickemu to optimise for a
+- `macos_release="big-sur"` instructs Quickemu to optimise for a
   particular macOS release.
   - For example VirtIO Network and Memory Ballooning are available in
     Big Sur and newer, but not previous releases.
@@ -755,11 +769,13 @@ Usage
 Arguments
   --access                          : Enable remote spice access support. 'local' (default), 'remote', 'clientipaddress'
   --braille                         : Enable braille support. Requires SDL.
+  --cpu-pinning                     : Choose which host cores correspond to which guest cores.
   --delete-disk                     : Delete the disk image and EFI variables
   --delete-vm                       : Delete the entire VM and its configuration
-  --display                         : Select display backend. 'sdl' (default), 'cocoa', 'gtk', 'none', 'spice' or 'spice-app'
+  --display                         : Select display backend. 'gtk' (default), 'sdl', 'cocoa', 'none', 'spice' or 'spice-app'
   --fullscreen                      : Starts VM in full screen mode (Ctl+Alt+f to exit)
   --ignore-msrs-always              : Configure KVM to always ignore unhandled machine-specific registers
+  --ignore-tsc-warning              : Skip TSC stability warning for macOS VMs on AMD
   --kill                            : Kill the VM process if it is running
   --offline                         : Override all network settings and start the VM offline
   --shortcut                        : Create a desktop shortcut
@@ -785,7 +801,7 @@ Arguments
   --keyboard_layout <layout>        : Set keyboard layout: 'en-us' (default)
   --mouse <type>                    : Set mouse. @Options: 'tablet' (default), 'ps2', 'usb', 'virtio'
   --usb-controller <type>           : Set usb-controller. @Options: 'ehci' (default), 'xhci', 'none'
-  --sound-card <type>               : Set sound card. @Options: 'intel-hda' (default), 'ac97', 'es1370', 'sb16', 'usb-audio', 'none'
+  --sound-card <type>               : Set sound card. @Options: 'intel-hda' (default), 'ac97', 'es1370', 'sb16', 'usb-audio', 'virtio-sound-pci', 'none'
   --sound-duplex <type>             : Set sound card duplex. @Options: 'hda-micro' (default: speaker/mic), 'hda-duplex' (line-in/line-out), 'hda-output' (output-only)
   --extra_args <arguments>          : Pass additional arguments to qemu
   --version                         : Print version
